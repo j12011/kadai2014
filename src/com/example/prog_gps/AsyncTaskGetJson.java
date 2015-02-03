@@ -29,24 +29,30 @@ import android.widget.TextView;
 public class AsyncTaskGetJson extends AsyncTask<Void, Void, String> {
 
 	private final static String TAG = "AsyncTaskGetJson";
+	String tmp_id = "";
+	String tmp_username = "";
+	String tmp_password = "";
+	String tmp_mailaddress = "";
+	String tmp_mailpass = "";
 
 	/**
 	 * API URL
 	 */
 	//private final static String API_URL = "http://192.168.1.87/json_select.php";
-	private static final String API_URL = "http://10.230.0.89/json_select.php";
+	//private static final String API_URL = "http://10.230.0.89/json_select.php";
+	private static final String API_URL = "http://j12006.sangi01.net/json_select.php";
 
 	/**
 	 * 呼び出し元のMainActivity
 	 */
-	private ListActivity activity;
+	private LoginPageActivity activity;
 
 	/**
 	 * Constructor
 	 *
 	 * @param _activity: 呼び出し元のアクティビティ
 	 */
-	public AsyncTaskGetJson(ListActivity _activity) {
+	public AsyncTaskGetJson(LoginPageActivity _activity) {
 		Log.d(TAG+" constructor", "start");
 
 		activity = _activity;
@@ -78,7 +84,7 @@ public class AsyncTaskGetJson extends AsyncTask<Void, Void, String> {
 
 				JSONObject rootObject = new JSONObject(data);
 
-				JSONArray userArray = rootObject.getJSONArray("User");
+				JSONArray userArray = rootObject.getJSONArray("users");
 
 				for (int n = 0; n < userArray.length(); n++) {
 					// User data
@@ -88,32 +94,31 @@ public class AsyncTaskGetJson extends AsyncTask<Void, Void, String> {
 					Log.d(TAG+" user data", userObject.toString());
 
 					String userId = userObject.getString("id");
-					String userName = userObject.getString("name");
-					String userStatus = userObject.getString("status");
-					String userComment = userObject.getString("comment");
-					String userLastModified = userObject.getString("last_modified");
-					//String userLatlng =  userObject.getString("lat") + "," +userObject.getString("lng") ;
-					result += "ID"+ userId + "\r\n" + "User: "+userName+" \r\n" +"状態: " +userStatus+"\r\n" +"コメント: " +userComment +"\r\n"
-							  + "最終更新："+userLastModified+"\r\n";
-					//+"http://maps.google.com/maps?q="+userLatlng+"\r\n";
+					String userName = userObject.getString("username");
+					String passWord = userObject.getString("password");
+					String mailAddress = userObject.getString("mailaddress");
+					String mailPass = userObject.getString("mailpass");
+
+					result += userId +"\n"+ userName+ "\n" + passWord + "\n"+ mailAddress +"\n"+mailPass+"\n";
+
+					tmp_id += userId+",";
+					tmp_username += userName+",";
+					tmp_password += passWord+",";
+					tmp_mailaddress += mailAddress+",";
+					tmp_mailpass += mailPass+",";
 
 
+					//result = userId;
 					// output の途中経過の確認
 					Log.d(TAG+" result", result);
 
-					// User Item data
-					//JSONArray userItemArray = userObject.getJSONArray("UserItem");
-					//for (int i = 0; i < userItemArray.length(); i++) {
-					//	JSONObject userItemObject = userItemArray.getJSONObject(i);
-
-						// JSON data の確認
-						//Log.d(TAG+" user item data", userItemObject.toString());
-
-						//String item = userItemObject.getString("item_name");
-						//result += "Item: "+item+"\r\n";
-					//}
-					result += "\r\n";
 				}
+				tmp_id.substring(0, tmp_id.length()-1);
+				tmp_username.substring(0, tmp_username.length()-1);
+				tmp_password.substring(0, tmp_password.length()-1);
+				tmp_mailaddress.substring(0, tmp_mailaddress.length()-1);
+				tmp_mailpass.substring(0, tmp_mailpass.length()-1);
+
 			}
 		}
 		catch (Exception e) {
@@ -131,8 +136,13 @@ public class AsyncTaskGetJson extends AsyncTask<Void, Void, String> {
 	@Override
 	protected void onPostExecute(String _result) {
 		Log.d(TAG+" onPostExecute", "start");
-
-		activity.textView.setText(_result);
+		activity.setResult(_result);
+		activity.setID_Array(tmp_id);
+		activity.setUSERNAME_Array(tmp_username);
+		activity.setPASSWORD_Array(tmp_password);
+		activity.setMAILADDRESS_Array(tmp_mailaddress);
+		activity.setMAILPASS_Array(tmp_mailpass);
+		activity.t.setText(_result);
 		return;
 	}
 

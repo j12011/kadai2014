@@ -45,6 +45,7 @@ import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -107,7 +108,8 @@ public class GPSActivity extends FragmentActivity implements LocationListener{
 
 		et_comment = (EditText) findViewById(id.editText1);
 		user_ID = LoginPageActivity.getID();
-		nowtime = "";
+		//nowtime = getNowTime();
+		//Toast.makeText(this, nowtime, Toast.LENGTH_LONG).show();
 
 		//ラジオボックス・ラジオボタン初期化
 		rg  = (RadioGroup)  findViewById(id.radioGroup1);
@@ -132,9 +134,16 @@ public class GPSActivity extends FragmentActivity implements LocationListener{
 				// TODO Auto-generated method stub
 				updateMap();
 				nowtime = getNowTime();
+				//nowtime = "1000000";
 				comment = et_comment.getText().toString();
 				getStatus();
 
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				bm.compress(Bitmap.CompressFormat.PNG, 100, baos);
+				String image64 = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+
+				TextView tv = (TextView) findViewById(R.id.textView3);
+				//tv.setText(image64);
 
 				//DBへのデータ送信
 				//-----[クライアント設定]
@@ -144,10 +153,15 @@ public class GPSActivity extends FragmentActivity implements LocationListener{
 				List<NameValuePair> nameValuePair = new ArrayList<NameValuePair>(1);
 				nameValuePair.add(new BasicNameValuePair("user_id", user_ID));
 				nameValuePair.add(new BasicNameValuePair("status", status));
-				//nameValuePair.add(new BasicNameValuePair("last_modified", nowtime));
+				nameValuePair.add(new BasicNameValuePair("created", nowtime));
+				nameValuePair.add(new BasicNameValuePair("modified", nowtime));
 				nameValuePair.add(new BasicNameValuePair("latitude", lat));
 				nameValuePair.add(new BasicNameValuePair("longitude", lng));
 				nameValuePair.add(new BasicNameValuePair("comment", comment));
+
+				nameValuePair.add(new BasicNameValuePair("image64", image64));
+				//nameValuePair.add(new BasicNameValuePair("img_file_name", nowtime));
+
 				try	{
 					//-----[POST送信]
 					httppost.setEntity(new UrlEncodedFormEntity(nameValuePair,"utf-8"));
@@ -156,10 +170,10 @@ public class GPSActivity extends FragmentActivity implements LocationListener{
 					response.getEntity().writeTo(byteArrayOutputStream);
 					//-----[サーバーからの応答を取得]
 					if(response.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
-						TextView tv = (TextView) findViewById(R.id.textView3);
+						//TextView tv = (TextView) findViewById(R.id.textView3);
 						tv.setText(byteArrayOutputStream.toString());
 					} else {
-						TextView tv = (TextView) findViewById(R.id.textView3);
+						//TextView tv = (TextView) findViewById(R.id.textView3);
 						tv.setText(byteArrayOutputStream.toString());
 //					Toast.makeText(this, "[error]: "+response.getStatusLine(), Toast.LENGTH_LONG).show();
 					}
@@ -170,21 +184,28 @@ public class GPSActivity extends FragmentActivity implements LocationListener{
 				}
 
 				//メールの自動送信
-				String[] toaddresses = {"j12011@sangi.jp","sangi_050@sangi.jp"};
+
+				//String[] toaddresses = {"j12011@sangi.jp","sangi_050@sangi.jp"};
+				String[] toaddresses = LoginPageActivity.getMAILADDRES();
+				String username = LoginPageActivity.getUSERNAME();
 				String mailtext = "このメールは災害時安否確認システムからのメッセージです。\n"+
-						          user_ID+"様がリストを更新しました。\n"+
+						          username+"様がリストを更新しました。\n"+
 						          "状態："+status+"\n"+
 						          "現在地\n"+
-						          "http://maps.google.com/maps?q="+lat+","+lng+"\n"+
+						          //"http://maps.google.com/maps?q="+lat+","+lng+"\n"+
+						          "http://j12006.sangi01.net/safety/safety_informations\n"+
 						          "コメント\n"+comment;
-				/*
+
+
 				try {
-					SendmailGmail.sendmail("sangi_050@sangi.jp",toaddresses,"sangi.jp",mailtext);
+					String tmpadd = LoginPageActivity.getUSERMAILADDRES();
+					String tmppass = LoginPageActivity.getUSERMAILPASS();
+					SendmailGmail.sendmail(tmpadd,toaddresses,tmppass,mailtext);
 				} catch (IOException e) {
 					// TODO 自動生成された catch ブロック
 					e.printStackTrace();
 				}
-				*/
+
 			}
 		});
 	}
@@ -321,7 +342,8 @@ public class GPSActivity extends FragmentActivity implements LocationListener{
                 bm = BitmapFactory.decodeFile(fileUri.getPath(), options);
 
                 Toast.makeText(this, "一時保存完了", Toast.LENGTH_LONG).show();
-
+                Log.d("",fileUri.getPath());
+                Log.d("size",""+bm.getHeight() );
                 //preview.setImageBitmap(bm);
             } else if (resultCode == RESULT_CANCELED) {
                 // User cancelled the image capture
@@ -411,13 +433,20 @@ public class GPSActivity extends FragmentActivity implements LocationListener{
 	    int hour = cal1.get(Calendar.HOUR_OF_DAY); //現在の時を取得
 	    int minute = cal1.get(Calendar.MINUTE);    //現在の分を取得
 	    int second = cal1.get(Calendar.SECOND);    //現在の秒を取得
-
-	    nowtime += Integer.toString(year)   + "/";
-	    nowtime += Integer.toString(month)  + "/";
-	    nowtime += Integer.toString(day)    + "_";
+/*
+	    nowtime += Integer.toString(year)   + "-";
+	    nowtime += Integer.toString(month)  + "-";
+	    nowtime += Integer.toString(day)    + " ";
 	    nowtime += Integer.toString(hour)   + ":";
 	    nowtime += Integer.toString(minute) + ":";
 	    nowtime += Integer.toString(second);
+*/
+	    nowtime += String.format("%04d-",year);
+	    nowtime += String.format("%02d-",month);
+	    nowtime += String.format("%02d ",day);
+	    nowtime += String.format("%02d:",hour);
+	    nowtime += String.format("%02d:",minute);
+	    nowtime += String.format("%02d",second);
 
 		return nowtime;
 	}

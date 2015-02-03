@@ -21,7 +21,7 @@ public class MenuActivity extends Activity{
 
 		TextView user_ID = (TextView) findViewById(id.textView1);
 		login_ID = LoginPageActivity.getID();
-		login_name = LoginPageActivity.getNAME();
+		login_name = LoginPageActivity.getUSERNAME();
 		//user_ID.setText("ようこそ！"+login_ID+"様");
 		user_ID.setText("ようこそ！"+login_name+"様");
 
@@ -33,11 +33,11 @@ public class MenuActivity extends Activity{
 	}
 	//リスト表示ボタンの動作
 	public void onClick_button2(View view){
-		Uri uri = Uri.parse("http://j12006.sangi01.net/safety/safety_informations");
-		Intent i = new Intent(Intent.ACTION_VIEW,uri);
-		startActivity(i);
-		//Intent intent = new Intent(MenuActivity.this, WebActivity.class);
-	    //startActivity(intent);
+		//Uri uri = Uri.parse("http://j12006.sangi01.net/safety/safety_informations");
+		//Intent i = new Intent(Intent.ACTION_VIEW,uri);
+		//startActivity(i);
+		Intent intent = new Intent(MenuActivity.this, WebActivity.class);
+	    startActivity(intent);
 	}
 
 }
